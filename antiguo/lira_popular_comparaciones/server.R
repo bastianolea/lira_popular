@@ -27,8 +27,9 @@ shinyServer(function(input, output, session) {
     output$tabla_palabras <- renderDataTable({
         datos() |> 
         count(txt_palabra) |> 
-        arrange(desc(n)) |> 
-        slice(1:30)
+        filter(n >= 2) |> 
+        arrange(desc(n))
+        #slice(1:30)
     })
 
     

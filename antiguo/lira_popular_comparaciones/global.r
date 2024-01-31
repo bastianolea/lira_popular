@@ -9,7 +9,7 @@ here::i_am("analizar.r")
 liras_palabra <- arrow::read_feather(here("lira_popular_comparaciones", "liras_palabra.feather"))
 liras_linea <- arrow::read_feather(here("lira_popular_comparaciones", "liras_linea.feather"))
 lista_liras <- arrow::read_feather(here("lira_popular_comparaciones", "lista_liras.feather"))
-comparadas_0 <- arrow::read_feather(here("lira_popular_comparaciones", "liras_comparadas_0.feather"))
+comparadas_0 <- arrow::read_feather(here("lira_popular_comparaciones", "liras_comparadas_1.feather"))
 
 #stopwords ----
 load("/home/bastian/Otros/Constitucion/constitucion_conceptos/stopwords.Rdata")

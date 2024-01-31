@@ -15,15 +15,14 @@ comparadas_0 <- bind_rows(
     mutate(archivo = 5),
   arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_6.parquet") |> 
     mutate(archivo = 6),
-  arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_7.parquet") |> 
-    mutate(archivo = 7),
-  #
+  # arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_7.parquet") |> 
+  #   mutate(archivo = 7),
   arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_8.parquet") |> 
     mutate(archivo = 8),
   arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_9.parquet") |> 
     mutate(archivo = 9),
-  arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_10.parquet") |> 
-    mutate(archivo = 10),
+  # arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_10.parquet") |> 
+  #   mutate(archivo = 10),
   arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_11.parquet") |> 
     mutate(archivo = 11),
   arrow::read_parquet("~/Otros/lira_popular/liras_comparacion_lineas_12.parquet") |> 
@@ -35,8 +34,13 @@ comparadas_0 <- bind_rows(
 #   ggplot2::ggplot(ggplot2::aes(id_lira.y)) +
 #   ggplot2::geom_histogram(binwidth = 100)
 
+comparadas_0 |> 
+  distinct(id_lira.x, n_linea.x, id_lira.y, n_linea.y, 
+           .keep_all = T)
+
 #guardar
-#arrow::write_feather(comparadas_0, "lira_popular/liras_comparadas_0.feather")
+arrow::write_feather(comparadas_0,
+                     "lira_popular_comparaciones/liras_comparadas_1.feather")
 
 #ver 
 comparadas_0 |> 
@@ -45,7 +49,7 @@ comparadas_0 |>
             max(id_lira.x)) |> 
   print(n=Inf)
 
-
+#7 10 sobran
 #faltan de 1501:2000 y de 4001 en adelante
 
 #liras por palabra ----
