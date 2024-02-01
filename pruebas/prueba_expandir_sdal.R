@@ -1,61 +1,14 @@
-# SDAL Spanish DAL: Diccionario de afectos en español
-# https://liaa.dc.uba.ar/es/software-datos/ #enlace roto
-# https://github.com/abcsds/sdal
-
-# idea de https://rpubs.com/HAVB/tangos
-
 library(dplyr)
 library(stringr)
-library(purrr)
-library(jsonlite)
-library(glue)
+library(tidytext)
 library(tidyr)
+
+stopwords <- readr::read_lines("datos/stopwords_español.txt")
+sdal <- readr::read_rds("datos/sdal_diccionario_afectos_español.rds")
 
 source("funciones.R")
 
-# descargar sdal ----
-# https://github.com/abcsds/sdal
-# download.file("https://github.com/abcsds/sdal/raw/master/data/sdal.json",
-#               "datos/sdal.json")
-
-# cargar datos descargados
-sdal <- jsonlite::fromJSON("datos/sdal.json", 
-                           simplifyDataFrame = TRUE, flatten = TRUE)
-
-# convertir json a dataframe
-sdal_1 <- map_df(1:length(sdal), ~{
-  word <- names(sdal)[[.x]]
-  datos <- sdal[[.x]] |> as_tibble()
-  datos$word <- word
-  
-  return(datos)
-})
-
-
-# obj: weather word is noun, verb, or adjective
-# pleasure: mean pleasantness
-# activation: mean activation
-# imagination: mean imagery
-# p_sdev: pleasantness standard deviation
-# a_sdev: activation standard deviation
-# i_sdev: imagery standard deviation
-
-sdal_2 <- sdal_1 |> 
-  select(word, obj, 
-         s_activation = activation, s_imagination = imagination, s_pleasantness = pleasantness, 
-         everything()) |> 
-  mutate(across(3:8, as.numeric)) |> 
-  arrange(word)
-
-#guardar ----
-readr::write_rds(sdal_2, "datos/sdal_diccionario_afectos_español.rds")
-
-
-
-# expandir ----
-# aumentar conjugaciones de palabras, dado que verbos de sdal vienen solo en infinitivo
-
-sdal_verbos <- sdal_2 |> 
+sdal_verbos <- sdal |> 
   rename(palabra = word, tipo = obj) |> 
   filter(tipo == "V") |> 
   select(verbo = palabra) |> 
@@ -144,18 +97,16 @@ sdal_verbos_expandidos <- sdal_verbos |>
   ) |> 
   glimpse()
 
-sdal_2_expandida <- sdal_verbos_expandidos |> 
+sdal_2 <- sdal_verbos_expandidos |> 
   pivot_longer(cols = starts_with("var"), values_to = "verbo_conjugado") |> 
   select(verbo, verbo_conjugado) |> 
-  left_join(sdal_2, by = c("verbo" = "word"), relationship = "many-to-many") |> 
+  left_join(sdal, by = c("verbo" = "word"), relationship = "many-to-many") |> 
   select(-verbo) |> 
   rename(word = verbo_conjugado)
 
-sdal_3 <- bind_rows(sdal_2, sdal_2_expandida) |> 
-  arrange(word) |> 
-  distinct(word, .keep_all = T) |> 
+sdal_3 <- bind_rows(sdal, sdal_2) |> arrange(word) |> distinct(word, .keep_all = T) |> 
   mutate(word = as.character(word))
-
-
+         
+  
 #guardar ----
 readr::write_rds(sdal_3, "datos/sdal_diccionario_afectos_español_expandido.rds")

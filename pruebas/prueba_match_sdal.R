@@ -1,3 +1,11 @@
+library(dplyr)
+library(stringr)
+library(tidytext)
+library(textclean)
+
+liras <- readr::read_rds("datos/corpus_lira_popular.rds")
+source("funciones.R")
+
 corpus_palabras <- liras_palabra$txt_palabra |> unique() |> sort()
 
 corpus_palabras_2 <- corpus_palabras |> 

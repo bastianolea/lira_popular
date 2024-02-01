@@ -1,17 +1,27 @@
+#carga el corpus de textos de la lira popular, y los separa en párrafos, líneas, y finalmente en palabras
+
 library(dplyr)
 library(stringr)
 library(tidytext)
 library(textclean)
 
 # cargar ----
-liras <- readr::read_rds("datos/corpus_lira_popular.rds")
+lira_xix <- readr::read_rds("datos/corpus_lira_popular_xix.rds")
+lira_1950 <- readr::read_rds("datos/corpus_lira_popular_1950.rds")
+
+liras <- bind_rows(lira_xix |> mutate(periodo = "XIX"),
+          lira_1950 |> mutate(periodo = "1950"))
+
+stopwords <- readr::read_lines("datos/stopwords_español.txt")
+
 source("funciones.R")
 
 #liras por lira ----
 liras_cuerpo <- liras |> 
-  arrange(enlace) |> 
+  mutate(titulo = str_squish(titulo)) |> 
+  arrange(desc(periodo), titulo) |> 
   #dar id a cada lira
-  group_by(autor, titulo, enlace) |> 
+  group_by(autor, titulo) |> 
   mutate(id = dplyr::cur_group_id()) |> 
   arrange(id) |> 
   #numero de párrafo
@@ -19,6 +29,8 @@ liras_cuerpo <- liras |>
   mutate(n_parrafo = 1:n()) |> 
   ungroup() |> 
   rename(txt_cuerpo = cuerpo)
+
+liras_cuerpo |> filter(id == 2) |> pull(txt_cuerpo)
 
 
 #liras por párrafo ----
@@ -28,7 +40,7 @@ liras_parrafo <- liras_cuerpo |>
                 token = "regex", pattern = "\n\n|\n\n\n", #separar palabras en los saltos
                 to_lower = FALSE, drop = F)
 
-liras_cuerpo |> filter(id == 2) |> pull(txt_cuerpo)
+
 liras_parrafo |> filter(id == 2) |> pull(txt_parrafo)
 
 
@@ -65,8 +77,10 @@ liras_palabra <- liras_linea |>
   mutate(txt_palabra = str_to_lower(txt_palabra),
          txt_palabra = str_trim(txt_palabra),
          txt_palabra = str_squish(txt_palabra)) |> 
-  #eliminar puntuacion
-  mutate(txt_palabra = str_remove_all(txt_palabra, simbolos)) |> 
+  #eliminar puntuacion y símbolos
+  mutate(txt_palabra = str_remove_all(txt_palabra, simbolos_regex)) |> 
+  #eliminar stopwords
+  filter(!(txt_palabra %in% stopwords_2)) |> 
   print(n=20)
 
 liras_parrafo |> filter(id == 2) |> pull(txt_parrafo)
@@ -74,31 +88,5 @@ liras_linea |> filter(id == 2) |> pull(txt_linea)
 liras_palabra |> filter(id == 2) |> pull(txt_palabra)
 
 
-
-palabras <- liras_palabra |> 
-  filter(id == 2) |> 
-  #filtrar stopwords
-  filter(!(txt_palabra %in% stopwords_2)) |> 
-  pull(txt_palabra) |> 
-  #remover símbolos
-  str_remove(simbolos_regex) |> 
-  str_remove(numeros)
- 
-tibble("word" = palabras) |> 
-  left_join(sdal, join_by(word)) |> 
-  print(n=Inf)
-  
-
-
-
-#filtrar
-tictoc::tic()
-liras_palabra_2 <- liras_palabra |> 
-  filter(!(txt_palabra %in% stopwords_2))
-tictoc::toc()
-
-
-
 #guardar ----
-arrow::write_feather(liras_palabra, "liras_palabra.feather")
-arrow::write_feather(liras_palabra_2, "liras_palabra_2.feather")
+arrow::write_feather(liras_palabra, "datos/corpus_lira_popular_palabra.feather")
