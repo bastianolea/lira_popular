@@ -1,4 +1,5 @@
-#se toma cada línea del corpus, y se compara con todas las demás líneas del corpus, buscando líneas que sean similares entre sí
+# se toma cada línea del corpus, y se compara con todas las demás líneas del corpus, 
+# buscando líneas que sean similares entre sí
 
 library(dplyr)
 library(stringr)
@@ -122,4 +123,5 @@ comparacion_liras_2 <- comparacion_liras |>
 # liras_linea |> filter(id == 317) |> select(autor, titulo, txt_cuerpo) |> pull(txt_cuerpo) |> unique()
 
 #guardar----
-arrow::write_parquet(comparacion_liras_2, "datos/corpus_liras_comparacion.parquet")
+arrow::write_parquet(comparacion_liras_2, "datos/lira_comparacion.parquet")
+arrow::read_parquet("datos/lira_comparacion.parquet")

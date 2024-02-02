@@ -1,14 +1,5 @@
 
 
-# stopwords ----
-stopwords_extra = c("mui", "porque", "cuando", "fué", "hoi", "hai", "despues", "voi", "dió", "aunque", "soi", "digo", "tambien", "siempre", "estaba")
-
-if (exists("stopwords")) {
-stopwords_cortas <- stopwords[nchar(stopwords) < 5]
-stopwords_2 <- c(stopwords_cortas, stopwords_extra)
-}
-
-
 # simbolos ----
 # "\\.|\\,|\\¿|\\?|\\!|\\¡|\\*|\\+|\\-"
 simbolos = c(".", "…", ",", "¿", "?", "!", "¡", "*", "+", "-", "—", "–", "_", "%", ":", ";", "º", 

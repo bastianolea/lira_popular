@@ -34,6 +34,14 @@ stop_unidas_sin_tilde <- stop_unidas |>
 
 stop_unidas_2 <- c(stop_unidas, stop_unidas_sin_tilde) |> unique() |> sort()
 
+#agregar extras
+stopwords_extra = c("mui", "porque", "cuando", "fué", "hoi", "hai", #"despues", 
+                    "voi", "dió", "aunque", "soi", 
+                    "digo", "tambien", #"siempre", "estaba",
+                    "á")
+
+# stopwords_cortas <- stopwords[nchar(stopwords) < 5]
+stop_unidas_3 <- c(stop_unidas_2, stopwords_extra)
 
 #guardar ----
-readr::write_lines(stop_unidas_2, "datos/stopwords_español.txt")
+readr::write_lines(stop_unidas_3, "datos/stopwords_español.txt")

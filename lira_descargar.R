@@ -1,3 +1,6 @@
+#usa web scraping para descargar los textos y metadatos de los documentos 
+#desde lirapopular.cl y lirapopular.cl/lirapopularxix/
+
 library(dplyr)
 library(rvest)
 library(polite)

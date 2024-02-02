@@ -22,15 +22,13 @@ liras_cuerpo <- liras |>
   arrange(desc(periodo), titulo) |> 
   #dar id a cada lira
   group_by(autor, titulo) |> 
-  mutate(id = dplyr::cur_group_id()) |> 
-  arrange(id) |> 
-  #numero de párrafo
-  group_by(id) |> 
-  mutate(n_parrafo = 1:n()) |> 
+  mutate(n_id = dplyr::cur_group_id()) |> 
+  arrange(n_id) |> 
   ungroup() |> 
-  rename(txt_cuerpo = cuerpo)
+  rename(txt_cuerpo = cuerpo) |> 
+  relocate(txt_cuerpo, .after = 0)
 
-liras_cuerpo |> filter(id == 2) |> pull(txt_cuerpo)
+liras_cuerpo |> filter(n_id == 2) |> pull(txt_cuerpo)
 
 
 #liras por párrafo ----
@@ -38,10 +36,14 @@ liras_parrafo <- liras_cuerpo |>
   #separar párrafos en líneas
   unnest_tokens(output = txt_parrafo, input = txt_cuerpo, 
                 token = "regex", pattern = "\n\n|\n\n\n", #separar palabras en los saltos
-                to_lower = FALSE, drop = F)
+                to_lower = FALSE, drop = F) |> 
+  #numero de párrafo
+  group_by(n_id) |> 
+  mutate(n_parrafo = 1:n()) |> 
+  ungroup()
 
 
-liras_parrafo |> filter(id == 2) |> pull(txt_parrafo)
+liras_parrafo |> filter(n_id == 5) |> pull(txt_parrafo)
 
 
 #liras por línea ----
@@ -51,16 +53,35 @@ liras_linea <- liras_parrafo |>
                 token = "regex", pattern = "\n", #separar palabras en los saltos
                 to_lower = FALSE, drop = F) |>  #sin tirar a minúsculas
   #numero de línea
-  group_by(id) |> 
+  group_by(n_id) |> 
   mutate(n_linea = 1:n()) |> 
   ungroup() |> 
   #limpiar
   mutate(txt_linea = str_trim(txt_linea),
-         txt_linea = str_squish(txt_linea)) |> 
+         txt_linea = str_squish(txt_linea)) |>
+  #eliminar ultimas líneas de comentarios, y sacar esa línea del párrafo
+  group_by(n_id) |> 
+  mutate(eliminar = n_linea == max(n_linea) & str_detect(txt_linea, "Nota:")) |> 
+  mutate(txt_parrafo = ifelse(eliminar, str_remove(txt_parrafo, txt_linea), txt_parrafo)) |> 
+  select(-eliminar) |> 
+  ungroup() |> 
   print(n=20)
 
-liras_parrafo |> filter(id == 2) |> pull(txt_parrafo)
-liras_linea |> filter(id == 2) |> pull(txt_linea)
+
+
+# liras_linea |> 
+#   group_by(n_id) |> 
+# mutate(eliminar = n_linea == max(n_linea) & str_detect(txt_linea, "Nota:")) |> 
+#   # filter(eliminar) |> 
+#   select(eliminar, txt_parrafo, txt_linea) |> 
+#   mutate(txt_parrafo = ifelse(eliminar, str_remove(txt_parrafo, txt_linea), txt_parrafo)) |> 
+#   filter(n_id == 78) |> 
+#   pull(txt_parrafo) |> unique()
+#   print(n=20)
+
+
+liras_parrafo |> filter(n_id == 2) |> pull(txt_parrafo)
+liras_linea |> filter(n_id == 2) |> pull(txt_linea)
 
 
 #liras por palabra ----
@@ -70,7 +91,7 @@ liras_palabra <- liras_linea |>
                 token = "regex", pattern = " ", #separar palabras en los espacios
                 to_lower = FALSE, drop = F) |>  #sin tirar a minúsculas
   #numero de palabra
-  group_by(id) |> 
+  group_by(n_id) |> 
   mutate(n_palabra = 1:n()) |>  #crear número de cada línea
   ungroup() |> 
   #limpiar
@@ -80,13 +101,13 @@ liras_palabra <- liras_linea |>
   #eliminar puntuacion y símbolos
   mutate(txt_palabra = str_remove_all(txt_palabra, simbolos_regex)) |> 
   #eliminar stopwords
-  filter(!(txt_palabra %in% stopwords_2)) |> 
+  filter(!(txt_palabra %in% stopwords)) |> 
   print(n=20)
 
-liras_parrafo |> filter(id == 2) |> pull(txt_parrafo)
-liras_linea |> filter(id == 2) |> pull(txt_linea)
-liras_palabra |> filter(id == 2) |> pull(txt_palabra)
+liras_parrafo |> filter(n_id == 4) |> pull(txt_parrafo)
+liras_linea |> filter(n_id == 2) |> pull(txt_linea)
+liras_palabra |> filter(n_id == 2) |> pull(txt_palabra)
 
 
 #guardar ----
-arrow::write_feather(liras_palabra, "datos/corpus_lira_popular_palabra.feather")
+arrow::write_feather(liras_palabra, "datos/lira_datos_palabra.feather")
