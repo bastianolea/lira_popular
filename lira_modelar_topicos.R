@@ -6,6 +6,7 @@
 library(tidytext)
 library(topicmodels)
 library(dplyr)
+library(stringr)
 library(tidyr)
 library(ggplot2)
 
@@ -63,7 +64,9 @@ liras_topicos <- lira_documents |>
   mutate(topico = max(gamma),
          topico = ifelse(topico == gamma, topic, NA)) |> 
   fill(topico) |> 
-  pivot_wider(id_cols = c(document, topico), names_from = topic, names_prefix = "topico_", values_from = gamma)
+  pivot_wider(id_cols = c(document, topico), names_from = topic, names_prefix = "topico_", values_from = gamma) |> 
+  mutate(document = as.integer(document)) |> 
+  rename(n_id = document)
 
 
 # guardar ----

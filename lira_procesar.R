@@ -26,9 +26,14 @@ liras_cuerpo <- liras |>
   arrange(n_id) |> 
   ungroup() |> 
   rename(txt_cuerpo = cuerpo) |> 
-  relocate(txt_cuerpo, .after = 0)
+  relocate(txt_cuerpo, .after = 0) |> 
+  #filtrar documentos de categorías que no nos interesan
+  filter(!(categoria %in% c("Documento", "Investigación", "Documentos")))
 
 liras_cuerpo |> filter(n_id == 2) |> pull(txt_cuerpo)
+
+liras_cuerpo |> count(categoria) |> arrange(desc(n))
+
 
 
 #liras por párrafo ----
@@ -102,7 +107,15 @@ liras_palabra <- liras_linea |>
   mutate(txt_palabra = str_remove_all(txt_palabra, simbolos_regex)) |> 
   #eliminar stopwords
   filter(!(txt_palabra %in% stopwords)) |> 
+  #eliminar otras
+  filter(!str_detect(txt_palabra, "\\d+")) |> 
+  filter(txt_palabra != "") |> 
+  filter(txt_palabra != " ") |> 
   print(n=20)
+
+#eliminar nombres de autores?
+# liras_palabra$autor |> unique() |> str_split(pattern = " ") |> 
+#   unlist() |>  str_remove(simbolos_regex)
 
 liras_parrafo |> filter(n_id == 4) |> pull(txt_parrafo)
 liras_linea |> filter(n_id == 2) |> pull(txt_linea)
@@ -111,3 +124,6 @@ liras_palabra |> filter(n_id == 2) |> pull(txt_palabra)
 
 #guardar ----
 arrow::write_feather(liras_palabra, "datos/lira_datos_palabra.feather")
+
+
+# liras_palabra |> count(categoria) |> arrange(desc(n)) |> print(n=Inf)
